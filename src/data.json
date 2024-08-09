@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "libelle": "Ordinateur",
+    "valeurInitiale": 1000,
+    "dateDebut": "2022-01-01",
+    "dateFin": "2023-01-01",
+    "amortissement": 10
+  },
+  {
+    "id": 2,
+    "libelle": "Téléphone",
+    "valeurInitiale": 500,
+    "dateDebut": "2021-01-01",
+    "dateFin": "2022-01-01",
+    "amortissement": 20
+  }
+]

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Form, Button, Container } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -16,6 +16,14 @@ function PossessionsPage() {
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
   const [amortissement, setAmortissement] = useState("");
+
+  useEffect(() => {
+    fetch("/src/data.json")
+      .then((response) => response.json())
+      .then((data) => {
+        setPossessions(data);
+      });
+  }, []);
 
   const addPerson = (name) => {
     if (name && !people.includes(name)) {
