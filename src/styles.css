@@ -95,3 +95,32 @@ button:hover {
 .mb-4 {
   margin-bottom: 20px;
 }
+/* src/styles.css */
+.form-control-custom {
+  width: 100%;
+  height: calc(
+    2.25rem + 2px
+  ); /* Ajuste la hauteur pour correspondre à form-control-lg */
+  font-size: 1.25rem;
+}
+/* src/styles.css */
+
+.form-control-custom {
+  width: 100%;
+  height: calc(
+    2.25rem + 2px
+  ); /* Ajuste la hauteur pour correspondre à form-control-lg */
+  font-size: 1.25rem;
+}
+
+.form-group-custom {
+  margin-bottom: 1.5rem; /* Espacement vertical */
+}
+
+.form-label-custom {
+  margin-bottom: 0.5rem; /* Espacement entre le label et le champ */
+}
+
+.button-custom {
+  margin-top: 1rem; /* Espacement entre le champ et le bouton */
+}
