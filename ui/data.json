@@ -1,0 +1,24 @@
+{
+  "people": [
+    "Alice",
+    "Bob",
+    {
+      "id": 3,
+      "name": "TOUTOU"
+    },
+    {
+      "id": 4,
+      "name": "BOZY"
+    }
+  ],
+  "possessions": [
+    {
+      "libelle": "Ordinateur",
+      "valeurInitiale": 2000,
+      "dateDebut": "2021-10-26",
+      "dateFin": "2025-10-26",
+      "amortissement": 10,
+      "person": "Alice"
+    }
+  ]
+}

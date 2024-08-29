@@ -1,23 +1,20 @@
-// src/models/Possession.js
-
-export default class Possession {
-  constructor(libelle, valeurInitiale, dateDebut, dateFin, amortissement) {
+class Possession {
+  constructor({ libelle, valeur, dateDebut, dateFin, taux }) {
     this.libelle = libelle;
-    this.valeurInitiale = valeurInitiale;
-    this.dateDebut = new Date(dateDebut);
-    this.dateFin = new Date(dateFin);
-    this.amortissement = amortissement;
+    this.valeur = valeur;
+    this.dateDebut = dateDebut;
+    this.dateFin = dateFin;
+    this.taux = taux;
   }
 
-  getValeurActuelle(date) {
-    const dateActuelle = new Date(date);
-    if (dateActuelle < this.dateDebut) return this.valeurInitiale;
-
-    const age = (dateActuelle - this.dateDebut) / (1000 * 60 * 60 * 24 * 365); // âge en années
-    const valeurActuelle =
-      this.valeurInitiale -
-      ((age * this.amortissement) / 100) * this.valeurInitiale;
-
-    return Math.max(valeurActuelle, 0); // La valeur ne peut pas être négative
+  getValeurActuelle() {
+    const today = new Date();
+    const dateDebut = new Date(this.dateDebut);
+    const dateFin = this.dateFin ? new Date(this.dateFin) : today;
+    const ageInYears = (dateFin - dateDebut) / (1000 * 60 * 60 * 24 * 365);
+    const depreciation = 1 - (this.taux / 100) * ageInYears;
+    return this.valeur * depreciation;
   }
 }
+
+export default Possession;
