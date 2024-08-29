@@ -1,0 +1,20 @@
+{
+  "possessions": [
+    {
+      "libelle": "Atody",
+      "valeur": "11",
+      "dateDebut": "2024-08-06T00:00:00.000Z",
+      "dateFin": "2024-08-31T00:00:00.000Z",
+      "taux": "3",
+      "valeurActuelle": "10"
+    },
+    {
+      "libelle": "Jiro",
+      "valeur": "23",
+      "dateDebut": "2024-07-28T00:00:00.000Z",
+      "dateFin": "2024-08-31T00:00:00.000Z",
+      "taux": "2",
+      "valeurActuelle": "23"
+    }
+  ]
+}
