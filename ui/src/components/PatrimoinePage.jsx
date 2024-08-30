@@ -4,85 +4,89 @@ import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, Tooltip, Legend, PointElement, TimeScale } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { getLineChartOptions } from '../chart';
+import { usePossessions } from './PossessionsContext';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, Tooltip, Legend, PointElement, TimeScale);
 
 const API_URL = 'http://localhost:3000';
 
 const PatrimoinePage = () => {
-  const [possessions, setPossessions] = useState([]);
+  const { possessions } = usePossessions();
   const [graphData, setGraphData] = useState({ labels: [], datasets: [] });
   const [total, setTotal] = useState(0);
+  const [selectedPossession, setSelectedPossession] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/possession`)
-      .then(response => response.json())
-      .then(data => {
-        setPossessions(data);
-        generateGraphData(data);
-        calculateTotal(data);
-      })
-      .catch(error => console.error('Erreur de récupération des possessions:', error));
-  }, []);
+    if (selectedPossession) {
+      generateGraphData(selectedPossession);
+      calculateTotal(selectedPossession);
+    }
+  }, [possessions, selectedPossession]);
 
-  const generateGraphData = (data) => {
+  const generateGraphData = (possession) => {
+    if (!possession) return;
+
     const labels = [];
     const values = [];
+    const startDate = new Date(possession.dateDebut);
+    const endDate = possession.dateFin ? new Date(possession.dateFin) : new Date();
+    const amortRate = possession.taux / 100;
 
-    data.forEach((p) => {
-      const startDate = new Date(p.dateDebut);
-      const endDate = p.dateFin ? new Date(p.dateFin) : new Date();
-      const amortRate = p.taux / 100;
+    let currentDate = new Date(startDate);
+    let currentValue = possession.valeur;
 
-      let currentDate = new Date(startDate);
-      let currentValue = p.valeur;
-
-      while (currentDate <= endDate) {
-        labels.push(currentDate.toISOString()); // Formatage en ISO pour compatibilité
-        const monthsElapsed = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24 * 30));
-        const amortizedValue = currentValue * Math.pow(1 - amortRate, monthsElapsed);
-        values.push(amortizedValue);
-
-        currentDate.setMonth(currentDate.getMonth() + 1);
-      }
-    });
+    while (currentDate <= endDate) {
+      labels.push(currentDate.toISOString()); // Use ISO string for time scale
+      values.push(currentValue);
+      currentValue -= currentValue * amortRate;
+      currentDate.setFullYear(currentDate.getFullYear() + 1);
+    }
 
     setGraphData({
       labels,
       datasets: [
         {
-          label: 'Valeur Amortie',
+          label: `Valeur Amortie: ${possession.libelle}`,
           data: values,
-          fill: false,
-          borderColor: 'rgba(75,192,192,1)',
-          tension: 0.1,
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
         },
       ],
     });
   };
 
-  const calculateTotal = (data) => {
-    const total = data.reduce((sum, p) => sum + parseFloat(p.valeurActuelle || p.valeur), 0);
-    setTotal(total);
+  const calculateTotal = (possession) => {
+    if (!possession) return;
+
+    const startDate = new Date(possession.dateDebut);
+    const endDate = possession.dateFin ? new Date(possession.dateFin) : new Date();
+    const amortRate = possession.taux / 100;
+
+    let currentValue = possession.valeur;
+
+    while (startDate <= endDate) {
+      currentValue -= currentValue * amortRate;
+      startDate.setFullYear(startDate.getFullYear() + 1);
+    }
+
+    // Ensure that total is a number
+    setTotal(currentValue);
   };
 
   return (
-    <div className="patrimoine-page">
+    <div>
       <h2>Patrimoine</h2>
-      <Button variant="primary" onClick={() => calculateTotal(possessions)}>
-        Calculer le Total
-      </Button>
-      <div className="total-display">
-        <h4>Total des Patrimoines: {total.toFixed(2)} Ar</h4>
-      </div>
+      <Line data={graphData} options={getLineChartOptions()} />
+      <h3>Total du Patrimoine: {(Number(total) || 0).toFixed(2)} Ar</h3>
       <Table striped bordered hover>
         <thead>
           <tr>
             <th>Libelle</th>
-            <th>Valeur</th>
+            <th>Valeur Initiale</th>
             <th>Date Début</th>
             <th>Date Fin</th>
             <th>Amortissement</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -93,14 +97,13 @@ const PatrimoinePage = () => {
               <td>{new Date(p.dateDebut).toLocaleDateString()}</td>
               <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
               <td>{p.taux}%</td>
+              <td>
+                <Button onClick={() => setSelectedPossession(p)}>Voir Valeur Amortie</Button>
+              </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      <div>
-        <h3>Graphique de Valeur Amortie</h3>
-        <Line data={graphData} options={getLineChartOptions()} />
-      </div>
     </div>
   );
 };

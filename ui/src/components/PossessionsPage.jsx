@@ -1,12 +1,12 @@
 // PossessionsPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
+import { usePossessions } from './PossessionsContext';
 
 const API_URL = 'http://localhost:3000/possession';
 
 const PossessionsPage = () => {
-  const [possessions, setPossessions] = useState([]);
+  const { possessions, setPossessions } = usePossessions();
   const [libelle, setLibelle] = useState("");
   const [valeurInitiale, setValeurInitiale] = useState("");
   const [dateDebut, setDateDebut] = useState(new Date());
@@ -139,7 +139,6 @@ const PossessionsPage = () => {
             <th>Date Début</th>
             <th>Date Fin</th>
             <th>Amortissement</th>
-            <th>Valeur Actuelle</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -150,8 +149,7 @@ const PossessionsPage = () => {
               <td>{p.valeur}</td>
               <td>{new Date(p.dateDebut).toLocaleDateString()}</td>
               <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
-              <td>{p.taux}</td>
-              <td>{p.valeurActuelle}</td>
+              <td>{p.taux}%</td>
               <td>
                 <Button onClick={() => handleEditPossession(p)}>Éditer</Button>
                 <Button onClick={() => handleDeletePossession(p.libelle)} variant="danger">Supprimer</Button>
