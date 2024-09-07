@@ -33,8 +33,8 @@ const PatrimoinePage = () => {
       .then(response => {
         const data = response.data;
         setPossessions(data);
-        generateGraphData(data, new Date(0), new Date());
         setFilteredPossessions(data);
+        generateGraphData(data, new Date(0), new Date());
       })
       .catch(error => console.error('Erreur de récupération des possessions:', error));
   }, []);
@@ -46,14 +46,14 @@ const PatrimoinePage = () => {
     data.forEach((p) => {
       const possessionStartDate = new Date(p.dateDebut);
       const possessionEndDate = p.dateFin ? new Date(p.dateFin) : new Date();
-      const amortRate = p.taux ? p.taux / 100 : 0;
+      const amortRate = p.tauxAmortissement ? p.tauxAmortissement / 100 : 0;
 
       let currentDate = new Date(possessionStartDate);
       let currentValue = p.valeur;
 
       while (currentDate <= possessionEndDate) {
         if (currentDate >= start && currentDate <= end) {
-          labels.push(currentDate.toISOString().split('T')[0]);
+          labels.push(format(currentDate, 'yyyy-MM-dd'));
           const monthsElapsed = Math.floor((currentDate - possessionStartDate) / (1000 * 60 * 60 * 24 * 30));
           const amortizedValue = currentValue * Math.pow(1 - amortRate, monthsElapsed);
           values.push(amortizedValue);
@@ -99,7 +99,7 @@ const PatrimoinePage = () => {
         const possessionEndDate = p.dateFin ? new Date(p.dateFin) : new Date();
         if (date >= possessionStartDate && date <= possessionEndDate) {
           const monthsElapsed = Math.floor((date - possessionStartDate) / (1000 * 60 * 60 * 24 * 30));
-          const amortRate = p.taux ? p.taux / 100 : 0;
+          const amortRate = p.tauxAmortissement ? p.tauxAmortissement / 100 : 0;
           const amortizedValue = p.valeur * Math.pow(1 - amortRate, monthsElapsed);
           return sum + amortizedValue;
         }
@@ -175,7 +175,7 @@ const PatrimoinePage = () => {
               <td>{p.valeur}</td>
               <td>{new Date(p.dateDebut).toLocaleDateString()}</td>
               <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
-              <td>{p.taux ? `${p.taux}%` : 'N/A'}</td>
+              <td>{p.tauxAmortissement ? `${p.tauxAmortissement}%` : 'N/A'}</td>
             </tr>
           ))}
         </tbody>

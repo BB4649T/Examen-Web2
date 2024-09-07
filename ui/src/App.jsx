@@ -2,8 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import PatrimoinePage from './components/PatrimoinePage';
 import PossessionsPage from './components/PossessionsPage';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap styles are included
-import './App.css'; // Include any custom styles
+import CreatePossessionPage from './components/CreatePossessionPage';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
 const App = () => {
   return (
@@ -20,6 +21,9 @@ const App = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/possessions">Possessions</Link>
                 </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/possession/create">Créer une Possession</Link>
+                </li>
               </ul>
             </div>
           </nav>
@@ -28,6 +32,7 @@ const App = () => {
           <Routes>
             <Route path="/patrimoine" element={<PatrimoinePage />} />
             <Route path="/possessions" element={<PossessionsPage />} />
+            <Route path="/possession/create" element={<CreatePossessionPage />} />
             <Route path="/" element={<h1>Bienvenue sur la Gestion du Patrimoine</h1>} />
           </Routes>
         </main>

@@ -5,14 +5,21 @@ import { Link } from 'react-router-dom';
 const PossessionsPage = () => {
   const [possessions, setPossessions] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPossessions = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/possessions');
-        setPossessions(response.data);
+        if (Array.isArray(response.data)) {
+          setPossessions(response.data);
+        } else {
+          throw new Error('Les données récupérées ne sont pas un tableau.');
+        }
       } catch (error) {
         setError('Une erreur est survenue lors de la récupération des possessions.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -21,12 +28,16 @@ const PossessionsPage = () => {
 
   const handleClose = async (libelle) => {
     try {
-      await axios.put(`http://localhost:5000/api/possessions/${libelle}/close`);
+      await axios.delete(`http://localhost:5000/api/possessions/${libelle}`);
       setPossessions(prevPossessions => prevPossessions.filter(p => p.libelle !== libelle));
     } catch (error) {
       setError('Une erreur est survenue lors de la clôture de la possession.');
     }
   };
+
+  if (loading) {
+    return <p>Chargement des possessions...</p>;
+  }
 
   return (
     <div>
@@ -42,30 +53,34 @@ const PossessionsPage = () => {
             <th>Date Fin</th>
             <th>Taux</th>
             <th>Valeur Actuelle</th>
-            <th>Possesseur</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {possessions.map(p => (
-            <tr key={p.libelle}>
-              <td>{p.libelle}</td>
-              <td>{p.valeur}</td>
-              <td>{new Date(p.dateDebut).toLocaleDateString()}</td>
-              <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
-              <td>{p.taux ? `${p.taux}%` : 'N/A'}</td>
-              <td>{(p.valeur * Math.pow(1 - (p.taux ? p.taux / 100 : 0), (new Date() - new Date(p.dateDebut)) / (1000 * 60 * 60 * 24 * 30))).toFixed(2)}</td>
-              <td>{p.possesseur ? `${p.possesseur.nom} ${p.possesseur.prenom}` : 'N/A'}</td>
-              <td>
-                <button 
-                  className="btn btn-danger" 
-                  onClick={() => handleClose(p.libelle)}>
-                  Clôturer
-                </button>
-                <Link className="btn btn-secondary ms-2" to={`/possession/update/${p.libelle}`}>Modifier</Link>
-              </td>
+          {Array.isArray(possessions) && possessions.length > 0 ? (
+            possessions.map(p => (
+              <tr key={p.libelle}>
+                <td>{p.libelle}</td>
+                <td>{p.valeur}</td>
+                <td>{p.dateDebut ? new Date(p.dateDebut).toLocaleDateString() : 'N/A'}</td>
+                <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
+                <td>{p.taux ? `${p.taux}%` : 'N/A'}</td>
+                <td>
+                  {(p.valeur * Math.pow(1 - (p.taux ? p.taux / 100 : 0), 
+                  (new Date() - new Date(p.dateDebut)) / (1000 * 60 * 60 * 24 * 30)))
+                  .toFixed(2)}
+                </td>
+                <td>
+                  <button className="btn btn-danger" onClick={() => handleClose(p.libelle)}>Clôturer</button>
+                  <Link className="btn btn-secondary ms-2" to={`/possession/update/${p.libelle}`}>Modifier</Link>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7">Aucune possession trouvée.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

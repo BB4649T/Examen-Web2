@@ -1,4 +1,10 @@
-// chart.js
+// src/chart.js
+
+import { Chart as ChartJS, LineElement, LinearScale, Tooltip, Legend, TimeScale, CategoryScale } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+ChartJS.register(LineElement, LinearScale, Tooltip, Legend, TimeScale, CategoryScale);
+
 export const getLineChartOptions = () => ({
   responsive: true,
   plugins: {
@@ -10,9 +16,9 @@ export const getLineChartOptions = () => ({
         label: (context) => {
           const label = context.dataset.label || '';
           if (label) {
-            return `${label}: ${context.raw.toFixed(2)}`; // Affiche la valeur
+            return `${label}: ${context.raw.y.toFixed(2)}% (${context.raw.x.toLocaleDateString()})`;
           }
-          return context.raw.toFixed(2);
+          return `${context.raw.y.toFixed(2)}% (${context.raw.x.toLocaleDateString()})`;
         },
       },
     },
@@ -21,24 +27,29 @@ export const getLineChartOptions = () => ({
     x: {
       type: 'time',
       time: {
-        unit: 'year',
-        tooltipFormat: 'MMM yyyy', // Utiliser 'yyyy' pour l'année
+        unit: 'month',
+        tooltipFormat: 'MMM yyyy',
         displayFormats: {
-          year: 'yyyy', // Utiliser 'yyyy' pour l'année
+          month: 'MMM yyyy',
         },
       },
       title: {
         display: true,
         text: 'Date',
       },
+      ticks: {
+        source: 'data',
+      },
     },
     y: {
+      min: 0,
+      max: 100,
       title: {
         display: true,
-        text: 'Valeur Amortie',
+        text: 'Taux d\'Amortissement (%)',
       },
       ticks: {
-        callback: (value) => value.toFixed(2),
+        stepSize: 10,
       },
     },
   },
