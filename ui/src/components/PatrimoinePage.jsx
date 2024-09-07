@@ -33,7 +33,7 @@ const PatrimoinePage = () => {
       .then(response => {
         const data = response.data;
         setPossessions(data);
-        setFilteredPossessions(data);
+        setFilteredPossessions(Array.isArray(data) ? data : []);
         generateGraphData(data, new Date(0), new Date());
       })
       .catch(error => console.error('Erreur de récupération des possessions:', error));
