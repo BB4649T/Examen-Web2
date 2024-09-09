@@ -31,9 +31,10 @@ const PatrimoinePage = () => {
   useEffect(() => {
     axios.get(`${API_URL}/api/possessions`)
       .then(response => {
-        const data = response.data;
+        const data = response.data[0]?.data?.possessions || [];
+        console.log('Data from API:', data); // Vérifiez les données reçues
         setPossessions(data);
-        setFilteredPossessions(Array.isArray(data) ? data : []);
+        setFilteredPossessions(data);
         generateGraphData(data, new Date(0), new Date());
       })
       .catch(error => console.error('Erreur de récupération des possessions:', error));
@@ -44,6 +45,8 @@ const PatrimoinePage = () => {
     const values = [];
 
     data.forEach((p) => {
+      if (!p.dateDebut || !p.valeur) return;
+
       const possessionStartDate = new Date(p.dateDebut);
       const possessionEndDate = p.dateFin ? new Date(p.dateFin) : new Date();
       const amortRate = p.tauxAmortissement ? p.tauxAmortissement / 100 : 0;
@@ -81,6 +84,8 @@ const PatrimoinePage = () => {
       const end = new Date(endDate);
 
       const filtered = possessions.filter((p) => {
+        if (!p.dateDebut) return false;
+        
         const possessionStartDate = new Date(p.dateDebut);
         const possessionEndDate = p.dateFin ? new Date(p.dateFin) : new Date();
         return (possessionStartDate <= end && possessionEndDate >= start);
@@ -95,6 +100,8 @@ const PatrimoinePage = () => {
     if (specificDate) {
       const date = new Date(specificDate);
       const totalAtDate = possessions.reduce((sum, p) => {
+        if (!p.dateDebut || !p.valeur) return sum;
+
         const possessionStartDate = new Date(p.dateDebut);
         const possessionEndDate = p.dateFin ? new Date(p.dateFin) : new Date();
         if (date >= possessionStartDate && date <= possessionEndDate) {
@@ -173,7 +180,7 @@ const PatrimoinePage = () => {
             <tr key={p.libelle}>
               <td>{p.libelle}</td>
               <td>{p.valeur}</td>
-              <td>{new Date(p.dateDebut).toLocaleDateString()}</td>
+              <td>{p.dateDebut ? new Date(p.dateDebut).toLocaleDateString() : 'N/A'}</td>
               <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
               <td>{p.tauxAmortissement ? `${p.tauxAmortissement}%` : 'N/A'}</td>
             </tr>

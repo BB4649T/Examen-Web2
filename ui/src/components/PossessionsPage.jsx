@@ -11,13 +11,17 @@ const PossessionsPage = () => {
     const fetchPossessions = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/possessions');
-        if (Array.isArray(response.data)) {
-          setPossessions(response.data);
+        console.log('Réponse du serveur:', response.data); // Vérifiez la structure des données
+
+        // Adaptez la structure des données ici
+        if (response.data && response.data[0] && response.data[0].data && response.data[0].data.possessions) {
+          setPossessions(response.data[0].data.possessions);
         } else {
-          throw new Error('Les données récupérées ne sont pas un tableau.');
+          throw new Error('Les données récupérées ne sont pas au format attendu.');
         }
       } catch (error) {
-        setError('Une erreur est survenue lors de la récupération des possessions.');
+        console.error('Erreur lors de la récupération des possessions:', error.message);
+        setError(`Une erreur est survenue lors de la récupération des possessions: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -26,10 +30,10 @@ const PossessionsPage = () => {
     fetchPossessions();
   }, []);
 
-  const handleClose = async (libelle) => {
+  const handleClose = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/possessions/${libelle}`);
-      setPossessions(prevPossessions => prevPossessions.filter(p => p.libelle !== libelle));
+      await axios.delete(`http://localhost:5000/api/possessions/${id}`);
+      setPossessions(prevPossessions => prevPossessions.filter(p => p.id !== id));
     } catch (error) {
       setError('Une erreur est survenue lors de la clôture de la possession.');
     }
@@ -59,20 +63,18 @@ const PossessionsPage = () => {
         <tbody>
           {Array.isArray(possessions) && possessions.length > 0 ? (
             possessions.map(p => (
-              <tr key={p.libelle}>
+              <tr key={p.id}>
                 <td>{p.libelle}</td>
                 <td>{p.valeur}</td>
                 <td>{p.dateDebut ? new Date(p.dateDebut).toLocaleDateString() : 'N/A'}</td>
                 <td>{p.dateFin ? new Date(p.dateFin).toLocaleDateString() : 'N/A'}</td>
-                <td>{p.taux ? `${p.taux}%` : 'N/A'}</td>
+                <td>{p.tauxAmortissement ? `${p.tauxAmortissement}%` : 'N/A'}</td>
                 <td>
-                  {(p.valeur * Math.pow(1 - (p.taux ? p.taux / 100 : 0), 
-                  (new Date() - new Date(p.dateDebut)) / (1000 * 60 * 60 * 24 * 30)))
-                  .toFixed(2)}
+                  {calculateCurrentValue(p)}
                 </td>
                 <td>
-                  <button className="btn btn-danger" onClick={() => handleClose(p.libelle)}>Clôturer</button>
-                  <Link className="btn btn-secondary ms-2" to={`/possession/update/${p.libelle}`}>Modifier</Link>
+                  <button className="btn btn-danger" onClick={() => handleClose(p.id)}>Clôturer</button>
+                  <Link className="btn btn-secondary ms-2" to={`/possession/update/${p.id}`}>Modifier</Link>
                 </td>
               </tr>
             ))
@@ -85,6 +87,21 @@ const PossessionsPage = () => {
       </table>
     </div>
   );
+};
+
+// Fonction de calcul de la valeur actuelle d'une possession
+const calculateCurrentValue = (possession) => {
+  const { valeur, dateDebut, tauxAmortissement } = possession;
+  if (!dateDebut) return valeur;
+
+  const startDate = new Date(dateDebut);
+  const now = new Date();
+  const monthsElapsed = (now.getFullYear() - startDate.getFullYear()) * 12 + now.getMonth() - startDate.getMonth();
+
+  const depreciationRate = (tauxAmortissement / 100) || 0;
+  const currentValue = valeur * Math.pow(1 - depreciationRate, monthsElapsed);
+
+  return currentValue.toFixed(2);
 };
 
 export default PossessionsPage;
